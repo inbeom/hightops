@@ -43,10 +43,8 @@ class BackgroundWorker
 
   subscribe_to_intra_service_event
 
-  def work(message)
+  def perform(message = {})
     # Do work
-
-    ack!
   end
 end
 ```
@@ -54,7 +52,7 @@ end
 Publish messages as:
 
 ```ruby
-BackgroundWorker.publish(message)
+BackgroundWorker.publish(first: 1, second: 2)
 ```
 
 ### As Inter-service Message Processor
@@ -67,10 +65,8 @@ class UploadCreationProcessor
 
   subscribe_to_inter_service_event :uploads, events: [:created]
 
-  def work(message)
+  def perform(message = {})
     # Do work
-
-    ack!
   end
 end
 ```
@@ -83,7 +79,7 @@ to every events published using same tag.
 `Hightops::Publisher` provides interface for publishing messages:
 
 ```ruby
-Hightops::Publisher.new(tag: :uploads).publish(payload, :created)
+Hightops::Publisher.new(tag: :uploads).publish(:created, first: 1, second: 2)
 ```
 
 ## Contributing
