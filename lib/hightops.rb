@@ -1,5 +1,8 @@
-require 'active_support/inflector'
 require 'singleton'
+
+require 'active_support/hash_with_indifferent_access'
+require 'active_support/inflector'
+require 'multi_json'
 require 'sneakers'
 
 require 'hightops/version'

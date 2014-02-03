@@ -25,4 +25,11 @@ describe Hightops::Worker do
     it { expect { dummy_class.subscribe_to_intra_service_event }.to change { dummy_class.queue_name }.from(nil) }
     it { expect { dummy_class.subscribe_to_intra_service_event }.to change { dummy_class.queue_opts }.from(nil) }
   end
+
+  describe '#perform' do
+    before { dummy_class.include Hightops::Worker }
+    before { dummy_class.subscribe_to_intra_service_event }
+
+    it { expect { dummy_class.new.perform }.to raise_error(Hightops::Worker::NotImplemented) }
+  end
 end

@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'sneakers', '~> 0.1.0.pre'
   spec.add_dependency 'activesupport'
+  spec.add_dependency 'multi_json'
 
   spec.add_development_dependency 'bundler', '~> 1.5'
   spec.add_development_dependency 'rspec'

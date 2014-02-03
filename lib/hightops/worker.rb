@@ -13,9 +13,36 @@ module Hightops
   # processing and intra-service background job processing. Names of AMQP
   # components used for events are determined by project configuration.
   module Worker
+    # Public: Error indicating missing implementation of #perform method
+    class NotImplemented < StandardError; end
+
     def self.included(base)
       base.include Sneakers::Worker
+      base.include InstanceMethods
       base.extend ClassMethods
+    end
+
+    module InstanceMethods
+      # Internal: Parse JSON payload as preprocessing to perform desired
+      # task for the worker and send acknowledgement.
+      #
+      # payload - The String of JSON payload.
+      #
+      # Returns nothing.
+      def work(payload)
+        perform HashWithIndifferentAccess.new(MultiJson.load(payload))
+
+        ack!
+      end
+
+      # Public: After being overriden, performs desired task for the worker.
+      #
+      # arguments - The Hash containing arguments in concern.
+      #
+      # Returns nothing.
+      def perform(arguments = {})
+        raise Hightops::Worker::NotImplemented.new
+      end
     end
 
     module ClassMethods
@@ -46,12 +73,12 @@ module Hightops
 
       # Public: Publish an event to service-specific background jobs exchange.
       #
-      # message - Message payload for published event in stringified form.
+      # message - The Hash containing message payload for published event.
       # event   - Type for new event.
       #
       # Returns nothing.
-      def publish(message)
-        Hightops::Publisher.new(worker_class: self).publish(message, default_event_tag)
+      def publish(message = {})
+        Hightops::Publisher.new(worker_class: self).publish(default_event_tag, message)
       end
 
       # Internal: Recommended naming of specified queue.
