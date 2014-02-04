@@ -17,8 +17,8 @@ module Hightops
     class NotImplemented < StandardError; end
 
     def self.included(base)
-      base.include Sneakers::Worker
-      base.include InstanceMethods
+      base.send(:include, Sneakers::Worker)
+      base.send(:include, InstanceMethods)
       base.extend ClassMethods
     end
 
