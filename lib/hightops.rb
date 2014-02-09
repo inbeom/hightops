@@ -22,7 +22,10 @@ module Hightops
 
         # We ignore env configuration for Sneakers as it is too tied to its
         # internals.
-        Sneakers.configure env: nil
+        #
+        # Note: Sneakers 0.1.0 has an additional configuration option to ignore
+        # environment variable with Sneakers.not_environmental!
+        Sneakers.configure env: nil, amqp: config.amqp
       end
     end
   end
