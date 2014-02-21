@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+require 'hightops'
+require 'hightops/cli'
+
+Hightops::CLI.start
