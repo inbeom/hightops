@@ -8,14 +8,14 @@ module Hightops
 
     method_option :require, default: '.'
     method_option :environment
+    method_option :pid_path, defualt: 'tmp/pids/hightops.pid'
 
-    def run(workers)
+    desc 'start FirstWorker,SecondWorker, ... ,NthWorker', 'Run workers'
+    def start(workers)
       load_environment
       setup
-      start_runner
+      start_runner(workers)
     end
-
-    default_task :run
 
     private
 
@@ -32,10 +32,10 @@ module Hightops
     end
 
     def setup
-      Sneakers.configure daemonize: true
+      Sneakers.configure daemonize: true, pid_path: options[:pid_path]
     end
 
-    def start_runner
+    def start_runner(workers)
       workers, missing_workers = Sneakers::Utils.parse_workers(workers)
 
       raise WorkerNotFound unless missing_workers.empty?
