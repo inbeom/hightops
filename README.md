@@ -82,6 +82,33 @@ to every events published using same tag.
 Hightops::Publisher.new(tag: :uploads).publish(:created, first: 1, second: 2)
 ```
 
+### Testing
+
+In testing environment, interface to RabbitMQ is replaced with stub object.
+Before running test suite, load methods for stub objects as:
+
+```ruby
+# On top of spec_helper.rb
+
+require 'hightops/testing'
+```
+
+Additionally, to set up proper queue bindings, add this as before callback:
+
+```ruby
+Hightops.prepare(YourWorker, AnotherWorker, ...)
+```
+
+For example, in RSpec, it can be added as `before_suite` callback.
+
+```ruby
+RSpec.configure do |config|
+  config.before(:suite) do
+    Hightops.prepare(YourWorker, AnotherWorker, ...)
+  end
+end
+```
+
 ## Contributing
 
 1. Fork it ( http://github.com/<my-github-username>/hightops/fork )
