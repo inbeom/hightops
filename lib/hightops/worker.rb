@@ -46,6 +46,11 @@ module Hightops
     end
 
     module ClassMethods
+      # Public: Naming object for exchange in concern.
+      attr_reader :exchange_naming
+      # Public: List of events to which the worker queue listens.
+      attr_reader :events
+
       # Public: Subscribe to inter-service event through shared exchange.
       # Name of the queue is automatically determined by name of the worker
       # class.
@@ -55,10 +60,10 @@ module Hightops
       #
       # Returns nothing.
       def subscribe_to_inter_service_event(tag, options = {})
-        exchange_naming = Hightops::Naming::SharedExchange.new(tag: tag)
-        events = options[:events] || ['#']
+        @exchange_naming = Hightops::Naming::SharedExchange.new(tag: tag)
+        @events = options[:events] || ['#']
 
-        from_queue naming.to_s, options.merge(exchange: exchange_naming.to_s, exchange_type: :topic, routing_key: events)
+        from_queue naming.to_s, options.merge(exchange: @exchange_naming.to_s, exchange_type: :topic, routing_key: @events)
       end
 
       # Public: Subscribe to intra-service event through exchange for
@@ -66,7 +71,7 @@ module Hightops
       #
       # Returns nothing.
       def subscribe_to_intra_service_event
-        exchange_naming = Hightops::Naming::CommonExchange.new
+        @exchange_naming = Hightops::Naming::CommonExchange.new
 
         from_queue naming.to_s, exchange: exchange_naming.to_s, exchange_type: :direct, routing_key: default_event_tag
       end
