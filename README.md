@@ -82,6 +82,23 @@ to every events published using same tag.
 Hightops::Publisher.new(tag: :uploads).publish(:created, first: 1, second: 2)
 ```
 
+### Deploying with Capistrano
+
+Hightops provides Capistrano recipe compatible with Capistrano `~> 3.0`. To
+load the recipe, add this line in your `Capfile`:
+
+```ruby
+require 'hightops/capistrano'
+```
+
+You should set proper absolute path of your Hightops pid file and list of worker
+classes with Capistrano variables to run the recipe properly.
+
+```ruby
+set :hightops_pid, "#{shared_path}/tmp/pids/hightops.pid"
+set :hightops_workers, ['FirstWorker', 'SecondWorker']
+```
+
 ### Testing
 
 In testing environment, interface to RabbitMQ is replaced with stub object.
