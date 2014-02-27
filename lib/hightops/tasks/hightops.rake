@@ -12,7 +12,7 @@ namespace :deploy do
   desc 'Stop hightops'
   task :stop_hightops do
     on roles fetch(:hightops_role, :app) do
-      if test("[ -f #{fetch(:hightops_pid)} ]") && execute("kill -0 `cat #{fetch(:hightops_pid)}` > /dev/null 2>&1")
+      if test("[ -f #{fetch(:hightops_pid)} ]") && test("kill -0 `cat #{fetch(:hightops_pid)}` > /dev/null 2>&1")
         within current_path do
           execute 'echo Stopping Hightops'
           execute :kill, "-TERM `cat #{fetch(:hightops_pid)}`"
