@@ -26,7 +26,7 @@ module Hightops
     #
     # Returns nothing.
     def publish(event, payload = {})
-      exchange.publish(MultiJson.dump(payload), routing_key: event)
+      exchange.publish(MultiJson.dump(payload), routing_key: event, content_type: 'application/json')
     end
 
     protected
