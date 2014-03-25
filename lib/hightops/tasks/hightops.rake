@@ -2,7 +2,7 @@ namespace :deploy do
   desc 'Start hightops'
   task :start_hightops do
     on roles fetch(:hightops_roles, :app) do
-      within current_path do
+      within release_path do
         execute 'echo Starting Hightops'
         execute :bundle, :exec, :hightops, 'start', fetch(:hightops_workers).join(','), "--environment=#{fetch(:rails_env, 'production')} --pid_path=#{fetch(:hightops_pid)}"
       end
