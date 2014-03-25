@@ -19,7 +19,7 @@ Or install it yourself as:
 
 ## Usage
 
-### Configuring
+### Configuration
 
 Create `config/hightops.rb` as:
 
@@ -74,7 +74,7 @@ end
 By default, if `:events` option is not specified, queue of the worker listens
 to every events published using same tag.
 
-### Publishing Inter-service Messages
+#### Publishing Inter-service Messages
 
 `Hightops::Publisher` provides interface for publishing messages:
 
@@ -82,7 +82,7 @@ to every events published using same tag.
 Hightops::Publisher.new(tag: :uploads).publish(:created, first: 1, second: 2)
 ```
 
-### Deploying with Capistrano
+## Deployment
 
 Hightops provides Capistrano recipe compatible with Capistrano `~> 3.0`. To
 load the recipe, add this line in your `Capfile`:
@@ -99,10 +99,10 @@ set :hightops_pid, "#{shared_path}/tmp/pids/hightops.pid"
 set :hightops_workers, ['FirstWorker', 'SecondWorker']
 ```
 
-### Testing
+## Testing
 
-In testing environment, interface to RabbitMQ is replaced with stub object.
-Before running test suite, load methods for stub objects as:
+Hightops provides stub RabbitMQ objects for testing environment.  Before running
+your test suite, load the stub objects as:
 
 ```ruby
 # On top of spec_helper.rb
@@ -110,7 +110,10 @@ Before running test suite, load methods for stub objects as:
 require 'hightops/testing'
 ```
 
-Additionally, to set up proper queue bindings, add this as before callback:
+### Testing Intra-service Background Job Processor
+
+Set up proper queue bindings subject for your testing before running your test
+suite as:
 
 ```ruby
 Hightops.prepare(YourWorker, AnotherWorker, ...)
@@ -124,6 +127,21 @@ RSpec.configure do |config|
     Hightops.prepare(YourWorker, AnotherWorker, ...)
   end
 end
+```
+
+After setting up properly, perform testing as:
+
+```ruby
+it { expect { YourWorker.publish(params) }.to change { YourWorker.queue.length }.by(1) }
+```
+
+### Testing Inter-service Message Publisher
+
+Every published messages are stored in stubbed exchanges, and you can retrieve
+them as Arrays as listed below:
+
+```ruby
+it { expect { Hightops::Publisher.new(:my_events).publish(:tag, payload) }.to change { Hightops::Publisher.new(:my_events).exchange.events_tagged(:tag) }.by(1) }
 ```
 
 ## Contributing
