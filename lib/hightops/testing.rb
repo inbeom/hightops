@@ -16,6 +16,8 @@ module Hightops
       end
 
       def publish(payload, options = {})
+        events_tagged(options[:routing_key]).push(payload)
+
         events_queues.each do |events, queue|
           if events.include?(options[:routing_key]) || options[:routing_key] == '#'
             queue.push payload
@@ -27,8 +29,20 @@ module Hightops
         events_queues << [events, queue]
       end
 
+      def events_tagged(tag)
+        events[tag] ||= []
+      end
+
       def events_queues
         @events_queues ||= []
+      end
+
+      def events
+        @events ||= {}
+      end
+
+      def reset
+        @events = {}
       end
     end
 
@@ -51,7 +65,7 @@ module Hightops
     module Helpers
       def prepare(*klasses)
         klasses.each do |klass|
-          Hightops::Testing::Exchange.for(name: klass.queue_opts[:exchange]).bind(klass.events || klass.default_event_tag, Queue.for(klass.queue_name))
+          Hightops::Testing::Exchange.for(name: klass.queue_opts[:exchange]).bind(klass.events || [klass.default_event_tag], Queue.for(klass.queue_name))
         end
       end
     end
