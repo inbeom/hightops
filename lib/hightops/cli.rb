@@ -9,7 +9,6 @@ module Hightops
     method_option :require, default: '.'
     method_option :environment
     method_option :pid_path, defualt: 'tmp/pids/hightops.pid'
-
     desc 'start FirstWorker,SecondWorker, ... ,NthWorker', 'Run workers'
     def start(workers)
       load_environment
@@ -17,6 +16,9 @@ module Hightops
       start_runner(workers)
     end
 
+    method_option :require, default: '.'
+    method_option :environment
+    method_option :pid_path, defualt: 'tmp/pids/hightops.pid'
     desc 'bootstrap FirstWorker,SecondWorker, ... ,NthWorker', 'Bootstrap workers'
     def bootstrap(workers)
       load_environment
