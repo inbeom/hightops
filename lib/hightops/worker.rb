@@ -23,14 +23,29 @@ module Hightops
     end
 
     module InstanceMethods
+      # Public: Interface to Sneakers::Queue object which Worker is holding.
+      attr_reader :queue
+
       # Internal: Parse JSON payload as preprocessing to perform desired
       # task for the worker and send acknowledgement.
       #
-      # payload - The String of JSON payload.
+      # payload       - The String of JSON payload.
+      # delivery_info - Delivery information of the message.
+      # properties    - Properties associated with the message.
       #
       # Returns nothing.
-      def work(payload)
-        perform HashWithIndifferentAccess.new(MultiJson.load(payload))
+      def work_with_params(payload, delivery_info, properties)
+        begin
+          perform HashWithIndifferentAccess.new(MultiJson.load(payload))
+        rescue => exception
+          unless exception.is_a?(Hightops::Worker::NotImplemented)
+            retrier.publish(payload, delivery_info, properties) if self.class.queue_options[:retry]
+
+            # Exception tracker
+          end
+
+          raise exception
+        end
 
         ack!
       end
@@ -43,6 +58,20 @@ module Hightops
       def perform(arguments = {})
         raise Hightops::Worker::NotImplemented.new
       end
+
+      # Public: Set up queue and exchange for retrying failed jobs.
+      #
+      # Returns nothing.
+      def setup_retrier
+        retrier.setup if self.class.queue_options[:retry]
+      end
+
+      # Internal: Retrier object for the worker class.
+      #
+      # Returns Retrier object.
+      def retrier
+        @retrier ||= Hightops::Retrier.new(worker_class: self.class)
+      end
     end
 
     module ClassMethods
@@ -50,18 +79,22 @@ module Hightops
       attr_reader :exchange_naming
       # Public: List of events to which the worker queue listens.
       attr_reader :events
+      # Public: Flag indicates whether retrying is enabled or not.
+      attr_reader :queue_options
 
       # Public: Subscribe to inter-service event through shared exchange.
       # Name of the queue is automatically determined by name of the worker
       # class.
       #
-      # tag    - The Symbol tag name of exchange to be subscribed.
-      # events - The Array of event types to subscribe to.
+      # tag     - The Symbol tag name of exchange to be subscribed.
+      # options - Additional options for the event binding.
+      #           :events - The Array of event types to subscribe to.
       #
       # Returns nothing.
       def subscribe_to_inter_service_event(tag, options = {})
         @exchange_naming = Hightops::Naming::SharedExchange.new(tag: tag)
         @events = options[:events] || ['#']
+        setup_queue_options(options)
 
         from_queue naming.to_s, options.merge(exchange: @exchange_naming.to_s, exchange_type: :topic, routing_key: @events)
       end
@@ -69,9 +102,12 @@ module Hightops
       # Public: Subscribe to intra-service event through exchange for
       # service-specific background jobs.
       #
+      # options - Additional options for the event binding.
+      #
       # Returns nothing.
-      def subscribe_to_intra_service_event
+      def subscribe_to_intra_service_event(options = {})
         @exchange_naming = Hightops::Naming::CommonExchange.new
+        setup_queue_options(options)
 
         from_queue naming.to_s, exchange: exchange_naming.to_s, exchange_type: :direct, routing_key: default_event_tag
       end
@@ -98,6 +134,15 @@ module Hightops
       # Returns default event tag.
       def default_event_tag
         self.name.to_s.underscore
+      end
+
+      # Internal: Set up queue options for the Worker class.
+      #
+      # Returns queue options.
+      def setup_queue_options(options = {})
+        options[:retry] = 10 unless options.keys.include?(:retry)
+
+        @queue_options = options.slice(:retry)
       end
     end
   end

@@ -3,6 +3,9 @@ module Hightops
   class Connection
     include Singleton
 
+    # Public: Driver class which is set if it needs to be overrided.
+    attr_accessor :driver
+
     # Public: Instantiates new connection.
     #
     # Returns newly initialized connection object.
@@ -29,7 +32,7 @@ module Hightops
     # Returns bunny connection.
     def bunny_connection
       @mutex.synchronize do
-        @bunny_connection ||= Bunny.new(@amqp, vhost: @vhost, heartbeat: @heartbeat).tap { |connection| connection.start }
+        @bunny_connection ||= (@driver || Bunny).new(@amqp, vhost: @vhost, heartbeat: @heartbeat).tap { |connection| connection.start }
       end
     end
 

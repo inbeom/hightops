@@ -9,10 +9,13 @@ require 'hightops/version'
 require 'hightops/configuration'
 require 'hightops/connection'
 require 'hightops/naming/common_exchange'
+require 'hightops/naming/dead_letter_exchange'
 require 'hightops/naming/queue'
+require 'hightops/naming/retry_queue'
 require 'hightops/naming/shared_exchange'
 require 'hightops/worker'
 require 'hightops/publisher'
+require 'hightops/retrier'
 
 module Hightops
   def self.config(&block)
