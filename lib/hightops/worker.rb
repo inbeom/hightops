@@ -41,7 +41,7 @@ module Hightops
           unless exception.is_a?(Hightops::Worker::NotImplemented)
             retrier.publish(payload, delivery_info, properties) if self.class.queue_options[:retry]
 
-            # Exception tracker
+            Hightops::ErrorHandler.new.handle_exception(exception, delivery_info)
           end
 
           raise exception

@@ -16,6 +16,7 @@ require 'hightops/naming/shared_exchange'
 require 'hightops/worker'
 require 'hightops/publisher'
 require 'hightops/retrier'
+require 'hightops/error_handler'
 
 module Hightops
   def self.config(&block)
