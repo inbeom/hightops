@@ -17,6 +17,13 @@ module Hightops
       start_runner(workers)
     end
 
+    desc 'bootstrap FirstWorker,SecondWorker, ... ,NthWorker', 'Bootstrap workers'
+    def bootstrap(workers)
+      load_environment
+      setup
+      bootstrap_worker(workers)
+    end
+
     private
 
     def load_environment
@@ -42,6 +49,17 @@ module Hightops
       raise NoWorkers if workers.empty?
 
       Sneakers::Runner.new(workers).run
+    end
+
+    def bootstrap_worker(workers)
+      workers, missing_workers = Sneakers::Utils.parse_workers(workers)
+
+      raise WorkerNotFound unless missing_workers.empty?
+      raise NoWorkers if workers.empty?
+
+      workers.each do |worker|
+        worker.new.setup_retrier
+      end
     end
   end
 end
